@@ -25,7 +25,7 @@
             the plates to produce a full color photograph with as few artifacts as possible.</p>
 
         <section>
-            <div class="image-container">
+            <div class="image-container-overview">
                 <figure>
                     <a href="#" target="_blank"><img src="./media/tobolsk.jpg" alt="Project Image 1"></a>
                     <figcaption>Three-plate image of the town of Tobolsk</figcaption>
@@ -49,82 +49,133 @@
             the three plates in each image and using some procedure to align them correctly.
         </p>
         <h3>Exhaustive Alignment</h3>
-        <p> This algoirhtm involved exhaustively searching over a window of possible displacements ([-15,15] pixels) to align the red and green color plates
+        <p> This algorithm involved exhaustively searching over a window of possible displacements ([-15,15] pixels) to align the red and green color plates
             over the blue color plate, score each one using some image matching metric, and take the displacement with the best score. The one used here was the L2 norm also 
-            known as the Euclidean Distance.
+            known as the Euclidean Distance or Sum of Squared Distances (SSD).
         </p>
         <h3>Coarse-to-Fine Image Pyramid</h3>
         <p>
-            As the images become larger, exhaustive alignment becomes time-consuming. The alternative was to use the image pyramid approach. Downsized versions
+            As the images become larger, exhaustive alignment becomes time-consuming. The alternative was to use the image pyramid approach. This involves the following steps: Downsized versions
             of the color plates are created. At the smallest scale, the exhaustive search process is repeated over the same displacement window noting down 
             the displacement vector for the red and green color plates. As we proceed down the pyramid to the larger scaled images, we reduce the search space as we
             start searching from the scaled up displacement vector from the previous scale instead of searching from scratch!
         </p>
         <p>
             For an estimate of the downscaling the process, the most scaled down image was roughly 200x240 pixels. At the smallest scale (top of the pyramid), the
-            search space was [-15, 15], same as the exhaustive alignment. At every other scale, the search space was [-1, 1]. This ensures that the bulk of the alignment, 
+            search space was [-18, 18], same as the exhaustive alignment. At every other scale, the search space was [-1, 1]. This ensures that the bulk of the alignment, 
             shifting and checking happens at a very small scale, where image shifting and euclidean distance calculation is inexpensive.
         </p>
     </section>
 
     <section id="gallery">
         <h2>Results</h2>
+        <p>
+            Here is a gallery of colorized images after applying the Exhaustive Alignment and Coarse-to-fine image pyramid algorithms.
+        </p>
         <h3>Low-Quality Images (.jpg)</h3>
         <div class="image-container">
             <figure>
-                <a href="#" target="_blank"><img src="image1.jpg" alt="Project Image 1"></a>
-                <figcaption>Image Caption 1</figcaption>
+                <a href="#" target="_blank"><img src="./media/2cathedral_color.jpg" alt="Project Image 1"></a>
+                <figcaption>Reconstructed cathedral.jpg - G:[2, 5], R:[3, 12]</figcaption>
             </figure>
             <figure>
-                <a href="#" target="_blank"><img src="image2.jpg" alt="Project Image 2"></a>
-                <figcaption>Image Caption 2</figcaption>
+                <a href="#" target="_blank"><img src="./media/2monastery_color.jpg" alt="Project Image 2"></a>
+                <figcaption>Reconstructed monastery.jpg - G:[2, -3], R:[2, 3]</figcaption>
             </figure>
             <figure>
-                <a href="#" target="_blank"><img src="image3.jpg" alt="Project Image 3"></a>
-                <figcaption>Image Caption 3</figcaption>
+                <a href="#" target="_blank"><img src="./media/2tobolsk_color.jpg" alt="Project Image 3"></a>
+                <figcaption>Reconstructed tobolsk.jpg - G:[3, 3], R:[3, 6]</figcaption>
             </figure>
         </div>
         <h3>High-Quality Images (.ti)</h3>
         <div class="image-container">
             <figure>
-                <a href="#" target="_blank"><img src="image1.jpg" alt="Project Image 1"></a>
-                <figcaption>Image Caption 1</figcaption>
+                <a href="#" target="_blank"><img src="./media/1church_color.jpg" alt="Project Image 1"></a>
+                <figcaption>Reconstructed church.tif - G:[3, 36], R:[-3, 68] </figcaption>
             </figure>
             <figure>
-                <a href="#" target="_blank"><img src="image2.jpg" alt="Project Image 2"></a>
-                <figcaption>Image Caption 2</figcaption>
+                <a href="#" target="_blank"><img src="./media/1harvesters_color.jpg" alt="Project Image 2"></a>
+                <figcaption>Reconstructed harvesters.tif - G:[20, 68], R:[18, 132]</figcaption>
             </figure>
             <figure>
-                <a href="#" target="_blank"><img src="image3.jpg" alt="Project Image 3"></a>
-                <figcaption>Image Caption 3</figcaption>
+                <a href="#" target="_blank"><img src="./media/1icon_color.jpg" alt="Project Image 3"></a>
+                <figcaption>Reconstructed icon.tif - G:[19, 52], R:[20, 97]</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/1lady_color.jpg" alt="Project Image 1"></a>
+                <figcaption>Reconstructed lady.tif - G:[16, 52], R:[13, 116]</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/1melons_color.jpg" alt="Project Image 2"></a>
+                <figcaption>Reconstructed melons.tif - G:[19, 84], R:[18, 176]</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/1onion_church_color.jpg" alt="Project Image 3"></a>
+                <figcaption>Reconstructed onion_church.tif - G:[35, 52], R:[36, 116]</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/1sculpture_color.jpg" alt="Project Image 1"></a>
+                <figcaption>Reconstructed sculpture.tif - G:[-19, 36], R:[-32, 144]</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/1three_generations_color.jpg" alt="Project Image 2"></a>
+                <figcaption>Reconstructed three_generations.tif - G:[20, 52], R:[19, 114]</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/1train_color.jpg" alt="Project Image 3"></a>
+                <figcaption>Reconstructed train.tif - G:[4, 52], R:[30, 84]</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/1emir_color.jpg" alt="Project Image 2"></a>
+                <figcaption>Reconstructed emir.tif - G:[34, 52], R:[36, 115]</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/1self_portrait_color.jpg" alt="Project Image 3"></a>
+                <figcaption>Reconstructed self_portrait.tif - G:[36, 84], R:[35, 178]</figcaption>
             </figure>
         </div>
     </section>
 
     <section id="Bells and Whistles">
         <h2>Bells and Whistles</h2>
-        <h3>Edge Detection</h3>
+        <h3>Gradient Detection Maps</h3>
         <p>
-            This idea stems from the fact it would be clever to use better features for aligning images instead of using raw pixel values.
+            The idea of using gradients stems from the fact that it would be clever to use better features for aligning images instead of using raw pixel values.
             In some cases, when raw pixel values might communicate something inconducive for alignment, for eg. differing brightness, it is prudent to use
-            a feature like an edge map for alignment instead. 
+            a feature like gradient maps for alignment instead. 
         </p>
         <p>
-            An edge map in computer vision is a representation of the edges present in an image. Edges are significant transitions 
-            in intensity or color, which usually indicate boundaries of objects, changes in surface texture, or depth discontinuities.
+            In computer vision, a <strong>gradient map</strong> is a representation of the rate of change in intensity at each pixel of an image. It is used to highlight the edges or transitions between different regions of the image. When you apply the <strong>Sobel filter</strong> (such as with <code>filters.sobel</code> in Python's image processing libraries like <em>skimage</em>), you are calculating the <strong>image gradient</strong>.
         </p>
+        <p>
+            Specifically, the Sobel filter computes the first derivative of the image intensity in both the horizontal and vertical directions. It outputs a gradient map that emphasizes edges by measuring the magnitude of intensity changes in these two directions:
+        </p>
+        <ul>
+            <li><strong>Horizontal gradient</strong>: Captures changes in intensity along the x-axis.</li>
+            <li><strong>Vertical gradient</strong>: Captures changes in intensity along the y-axis.</li>
+        </ul>
+        <p>
+            The <strong>gradient map</strong> returned by <code>filters.sobel</code> typically combines these gradients to produce a single image, where each pixel represents the magnitude of the gradient at that location. Higher values in this map correspond to stronger edges or boundaries, while lower values indicate smoother or more uniform regions.
+        </p>
+        <p>In formula form, for each pixel <code>(x, y)</code>:</p>
+        <pre>
+    Gradient Magnitude = √((G<sub>x</sub>)² + (G<sub>y</sub>)²)
+        </pre>
+        <p>Where <code>G<sub>x</sub></code> and <code>G<sub>y</sub></code> are the gradients in the x and y directions, respectively.</p>
+        <p>The use of Gradient Maps improved the quality of church.tif significantly while minimally improving other images.</p>
+
         <div class="image-container">
             <figure>
-                <a href="#" target="_blank"><img src="image1.jpg" alt="edge map image"></a>
-                <figcaption>Image Caption 1</figcaption>
+                <a href="#" target="_blank"><img src="./media/grad_map.png" alt="edge map image"></a>
+                <figcaption>Gradient Map of church.tif</figcaption>
             </figure>
             <figure>
-                <a href="#" target="_blank"><img src="image2.jpg" alt="Before edge detection"></a>
-                <figcaption>Image Caption 2</figcaption>
+                <a href="#" target="_blank"><img src="./media/churchnoedge.jpg" alt="Before edge detection"></a>
+                <figcaption>Image Alignment without using Gradient Map</figcaption>
             </figure>
             <figure>
-                <a href="#" target="_blank"><img src="image3.jpg" alt="After edge detection"></a>
-                <figcaption>Image Caption 3</figcaption>
+                <a href="#" target="_blank"><img src="./media/1church_color.jpg" alt="After edge detection"></a>
+                <figcaption>Image Alignment after using Gradient Map</figcaption>
             </figure>
         </div>
     </section>
