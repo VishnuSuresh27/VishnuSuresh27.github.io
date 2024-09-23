@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Processing Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Fun with Frequencies and Filters</h1>
+        <h2>Vishnu Suresh</h2>
+        <h2>CS 180: Computer Vision and Computational Photography</h2>
+    </header>
+    
+    <section id="about">
+        <h2>Overview</h2>
+        <p> This project explores the multifarious ways of utilizing image filters and image frequency bands to come up with unique and interesting results.
+            These include Edge Detection using Derivative of Gaussian (DoG) Filters, hybridizing images so that what you view changes as a function of your distance from the image,
+            image sharpening, and multi-resolution blending. The power of these methods enables us to put creative ideas into picture! (You might see a Wimbledon Champion you've never heard of before!)
+        </p>
+        <p> 
+            This webpage will go through each of these methods in great detail showing all the images (intermediary and results) involved. 
+        </p>
+    </section>
+    
+    <section id="finite-difference-operator">
+        <h2>Finite Difference Operator</h2>
+        <p> In this section, we work on the image of a cameraman. I use two finite difference operators namely <b>[1 -1]</b> and <b>[1 -1].T</b> to compute the partial derivatives with respect to x and y respectively. This is done through convolution by using the scipy.convolve2d function with mode = same. Once I have these convolved images, I combine them using <b>np.sqrt(dx_deriv ** 2 + dy_deriv ** 2)</b> and I create an edge image by binarizing the gradient magnitude image by empirically picking the correct threshold. 
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_cameraman.jpg" alt="Project Image 1"></a>
+                <figcaption>The Camerman</figcaption>
+            </figure>
+        </div>
+        <div class="image-container">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_cameraman_blurred_x.jpg" alt="Project Image 1"></a>
+                <figcaption>Partial Derivative wrt. x</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_cameraman_blurred_y.jpg" alt="Project Image 2"></a>
+                <figcaption>Partial Derivative wrt. y</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_cameraman_edge_map.jpg" alt="Project Image 3"></a>
+                <figcaption>Edge Map (Threshold = 29)</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="Derivative of Gaussian (DoG) Filters">
+        <h2>Derivate of Gaussian (DoG) Filters</h2>
+        <p> 
+            Since the partial derivative images were rather noisy, I first apply a gaussian kernel on the original image through convolution. Once the original image, I repeat the same finite-difference-operator process above. Here are the results:
+        </p>
+        <div class="image-container">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_cameraman_gauss_X.jpg" alt="Project Image 1"></a>
+                <figcaption>Partial Derivative wrt. x on Gaussian Blurred Image</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_cameraman_gauss_Y.jpg" alt="Project Image 2"></a>
+                <figcaption>Partial Derivative wrt. y on Gaussian Blurred Image</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_cameraman_gauss_edge_map.jpg" alt="Project Image 3"></a>
+                <figcaption>COmbined Image: Edge Map (Threshold = 29)</figcaption>
+            </figure>
+        </div>
+        <p> 
+            <b>What differences do I see?</b> In the case of the Gaussian kernel filter, there are little to no unneccessary artifacts on the image. This would allow us to arrive at a better quality edge map.
+        </p>
+        <h2>DoG in one convolution operation</h2>
+        <p> 
+            Instead of first applying the Gaussian kernel on our original image and then convolving them with Dx and Dy finite finite-difference-operators, I can use a single convolution operation. I first convolve the Gaussian kernel with Dx and Dy.
+        </p>
+        <div class="image-container">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_gauss.png" alt="Project Image 1"></a>
+                <figcaption>Gaussian Kernel</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_gauss_dx.png" alt="Project Image 2"></a>
+                <figcaption>Gaussian Kernel convolved with Dx</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_gauss_dy.png" alt="Project Image 3"></a>
+                <figcaption>Gaussian Kernel convolved with Dy</figcaption>
+            </figure>
+        </div>
+        <p> 
+            Now I apply these kernels on the original unblurred image to get their "smoothened" partial derivatives with respect to x and y. Once I have these images, I combine them using <b>np.sqrt(dx_deriv ** 2 + dy_deriv ** 2)</b> to get the gradient magnitude image. 
+        </p>
+        <p>
+            As can be seen, because of commutativity of how convolution operations are applied, we get the same result as before. 
+        </p>
+        <div class="image-container">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_cameraman_dog_x.jpg" alt="Project Image 1"></a>
+                <figcaption>Partial Derivative wrt. x on Original Image using Gaussian Kernel convolved with Dx</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_cameraman_dog_y.jpg" alt="Project Image 2"></a>
+                <figcaption>Partial Derivative wrt. y on Original Image using Gaussian Kernel convolved with Dy</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_cameraman_dog_combined.jpg" alt="Project Image 3"></a>
+                <figcaption>Combined Image</figcaption>
+            </figure>
+        </div>
+        <p>COmparison of the final images through both methods. Images are very similar.</p>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_cameraman_gauss_edge_map.jpg" alt="Project Image 1"></a>
+                <figcaption>Result through multiple convolution operations</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_cameraman_dog_combined.jpg" alt="Project Image 2"></a>
+                <figcaption>Result through single DoG convolution operations</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="Image Sharpening">
+        <h2>Image Sharpening</h2>
+        <p>
+            In order to sharpen an image target, the image is convolved with a gaussian kernel in order to filter out higher frequencies, resulting in a blurred image blurred. The high-frequency details are then calculated through details = target - blurred, which removes all lower frequency features from the original image. These details are then emphasized in the final image through result = target + alpha * details where alpha is a constant sharpening factor. The value of alpha is picked through experimentation. 
+        </p>
+        <p>
+            Just like how the we know that the Gaussian Kernel can be used as the convolution operator for low-pass image filtering, I also derived the high pass convolution operator (called the unsharp mask filter) which gives you the higher frequencies of the image. 
+            Unsharp mask filter = <b>(1 + alpha) * identity - alpha * gauss2d</b>. Doesn't matter how one computes the high frequency images - either directly or through the unmask shape filter, both methods resilt in the exact same image.
+        </p>
+        <p>
+            Below, is an illustration of the image sharpening process of the given image of the Taj Mahal and a personally selected image of 20-time Tennis Grand-Slam Champion Roger Federer
+        </p>
+        <h3>Sharpening the Taj</h3>
+        <div class="image-container">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/taj copy.jpg" alt="edge map image"></a>
+                <figcaption>Original Taj Mahal Image</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_taj_lowfreq.jpg" alt="Before edge detection"></a>
+                <figcaption>Gaussian Blurred Taj Mahal</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_taj_highfreq_normalized.jpg" alt="After edge detection"></a>
+                <figcaption>High Frequency Taj Mahal</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_taj_sharpened.jpg" alt="Project Image 1"></a>
+                <figcaption>Sharpened Taj Mahal</figcaption>
+            </figure>
+        </div>
+        <h3>Sharpening the GOAT</h3>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/RF copy.jpg" alt="edge map image"></a>
+                <figcaption>Original Roger Federer Image</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_RF_sharpened.jpg" alt="Project Image 1"></a>
+                <figcaption>Sharpened Roger Federer</figcaption>
+            </figure>
+        </div>
+        <h3>Blurring and Re-Sharpening the GOAT</h3>
+        <p>
+            To test out how good the image sharpening process enhances the quality of an image, let's compare the quality of the original Roger Federer and the Roger Federer image that's first gaussian blurred and then sharpened.
+        </p>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/RF copy.jpg" alt="edge map image"></a>
+                <figcaption>Original Roger Federer Image</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_RF_blurred_sharpened.jpg" alt="Before edge detection"></a>
+                <figcaption>Gaussian Blurred and re-sharpened Roger Federer</figcaption>
+            </figure>
+        </div>
+        <p>
+            <b>THE VERDICT:</b> When comparing the original and the blurred-> sharpened versions of the RF images, they are similar, the original image does have more information in the image and is of better quality but the blurred and sharpened image does a good job of getting close. 
+        </p>
+    </section>
+
+    <section id="hybrid-images">
+        <h2>Hybrid Images</h2>
+        <p> 
+            The goal of this part of the assignment is to create hybrid images using the approach described in the SIGGRAPH 2006 paper by Oliva, Torralba, and Schyns. Hybrid images are static images that change in interpretation as a function of the viewing distance. The basic idea is that high frequency tends to dominate perception when it is available, but, at a distance, only the low frequency (smooth) part of the signal can be seen. By blending the high frequency portion of one image with the low-frequency portion of another, you get a hybrid image that leads to different interpretations at different distances.
+        </p>
+        <p>
+            The algorithm for generating hybrid images is as follows: we first align two images of our choice using the given interactive alignment script. Once we have the two images, we decide which one we want to see up close (High Frequency dominating) and which one we want to see from afar (Low Frequency Dominating). We compute the low frequency filtered and the high frequency filtered images and add them. This gives them the hybrid image. For the purposes of this project, before passing the images to the specific frequency filters, I grey-scaled them (i.e. consisting of only channel). Therefore, even the output was grey-scaled.
+        </p>
+        <p>Let's go this through this process in detail with the given nutmeg and derek images.</p>
+        <h3>Nutmeg and Derek Hybridization in Detail</h3>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_derek_aligned.png" alt="Project Image 1"></a>
+                <figcaption>Aligned Nutmeg (aligned on eye position)</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_nutmeg_aligned.png" alt="Project Image 2"></a>
+                <figcaption>Aligned Derek (aligned on eye position)</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_Low_Freq_Derek.png" alt="Project Image 3"></a>
+                <figcaption> Low Frequency Derek</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_High_Freq_nutmeg.png" alt="Project Image 3"></a>
+                <figcaption> High Frequency Nutmeg</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/w_nutmegderekhybrid.png" alt="Project Image 1"></a>
+                <figcaption>Hybrid Nutmeg-Derek</figcaption>
+            </figure>
+        </div>
+        <h3>Roger Federer and Rafael Nadal Hybridization</h3>
+        <div class="image-container">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/RF copy.jpg" alt="edge map image"></a>
+                <figcaption>Original Roger Federer Image</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/RafaelNadal-Copy1.jpg" alt="Before edge detection"></a>
+                <figcaption>Original Rafael Nadal Image</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Roger Nadal.png" alt="After edge detection"></a>
+                <figcaption>Hybrid Roger Nadal (Aligned on ears and grey-scaled)</figcaption>
+            </figure>
+        </div>
+        <h3>Albert Einstein and Marilyn Monroe Hybridization</h3>
+        <div class="image-container">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/einstein copy.jpg" alt="edge map image"></a>
+                <figcaption>Original Albert Einstein Image</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/monroe copy.jpg" alt="Before edge detection"></a>
+                <figcaption>Original Marilyn Monroe Image</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Albert Monroe.png" alt="After edge detection"></a>
+                <figcaption>Hybrid Albert Monroe (Aligned on eyes and grey-scaled) </figcaption>
+            </figure>
+        </div>
+        <p>
+            Let's do a detailed fourier space freqeuncy analysis of the Albert Einstein and Marilyn Monroe Intermediary and Final Images
+        </p>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Einstein Fourier.png" alt="Project Image 1"></a>
+                <figcaption>Log-magnitude Fourier Transform of original grey-scaled Albert Einstein</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Monroe Fourier.png" alt="Project Image 2"></a>
+                <figcaption>Log-magnitude Fourier Transform of original grey-scaled Marylin Monroe</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Einstein Lowpass.png" alt="Project Image 3"></a>
+                <figcaption>Log-magnitude Fourier Transform of grey-scaled low-pass filtered Albert Einstein</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Monroe Highpass.png" alt="Project Image 3"></a>
+                <figcaption>Log-magnitude Fourier Transform of grey-scaled high-pass filtered Marylin Monroe</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Albert Monroe Fourier.png" alt="Project Image 1"></a>
+                <figcaption>Log-magnitude Fourier Transform of grey-scaled hybrid Albert Monroe</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="gaussian-laplacian-stacks">
+        <h2>Gaussian and Laplacian Stacks</h2>
+        <p> 
+            A Gaussian Stack is an array of images, all of the same dimension with downsampling, where each successive image is a gaussian kernel filter convolved result of the previous image.
+        </p>
+        <p> 
+            A Laplacian Stack is again an array of images, all of the same dimension with downsampling, where an image i is obtained by subtracting the (i+1)th image of the Gaussian stack from the ith image. This means each image in this new Laplacian Stack represents different frequency bands of the original image. Below are levels 0, 3, and 6 of the laplacian stacks of the given apple and orange images. 0 => Highest Frequency Band and 6 => Lowest Frequency Band. <b>Please note:</b> During the blending process in the next section, the laplacian stack will also contain the lowest frequency/most blurred image from the gaussian stack as well. This ensures that if we collapse the stack, we retrieve the original image.
+        </p>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Apple Laplacian 0.png" alt="Project Image 1"></a>
+                <figcaption>Apple Laplacian Stack Level 0</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Orange Laplacian 0.png" alt="Project Image 2"></a>
+                <figcaption>Orange Laplacian Stack Level 0</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Apple Laplacian 3.png" alt="Project Image 1"></a>
+                <figcaption>Apple Laplacian Stack Level 3</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Orange Laplacian 3.png" alt="Project Image 2"></a>
+                <figcaption>Orange Laplacian Stack Level 3</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Apple Laplacian 6.png" alt="Project Image 1"></a>
+                <figcaption>Apple Laplacian Stack Level 6</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Orange Laplacian 6.png" alt="Project Image 2"></a>
+                <figcaption>Orange Laplacian Stack Level 6</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="multi-resolution-blending">
+        <h2>Multi-Resolution Image Blending</h2>
+        <p>
+            Now comes the most exciting section of this project. We use the laplacian stacks to blend the image of the apple and the orange to present the oraple. There will also be another fascinating never before seen Tennis Champion reveal.
+        </p>
+        <p>
+            This is how the process works: we generate a mask (could be a simple horizontal 0-1 mask or a more complicated irregular mask) and create a gaussian stack for it. Now using the mask gaussian stack and the laplacian stacks of the input images, we perform a process illustrated in the image below.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Blending Lecture Slide.png" alt="Project Image 1"></a>
+                <figcaption>Blending Process Slide from Lecture. We add all the l_{k}s to arrive at the final blended image.</figcaption>
+            </figure>
+        </div>
+        <h3>The Oraple</h3>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Horizontal Mask.png" alt="Project Image 1"></a>
+                <figcaption>Horizontal Mask</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Oraple.png" alt="Project Image 2"></a>
+                <figcaption>Oraple</figcaption>
+            </figure>
+        </div>
+        <h3>The Evolution of a new Wimbledon Champion!</h3>
+        <p>
+            This process blends my face with the image of Roger Federer winning the 2017 Gentlemen's Wimbledon Singles Championship. The process is the almost the same as above. The only difference is that I first align both the images and make them the same dimension, before creating the irregular mask, the gaussian and the laplacian stacks. 
+        </p>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/wimbledon copy.jpg" alt="Project Image 1"></a>
+                <figcaption>RF Original</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/vs copy.jpg" alt="Project Image 2"></a>
+                <figcaption>VS Original</figcaption>
+            </figure>
+        </div>
+        <p>
+            Here are the Laplacian Stacks of these images.
+        </p>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/RF Laplacian 0.png" alt="Project Image 1"></a>
+                <figcaption>RF Laplacian Stack Level 0</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/VS Laplacian 0.png" alt="Project Image 2"></a>
+                <figcaption>VS Laplacian Stack Level 0</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/RF Laplacian 3.png" alt="Project Image 1"></a>
+                <figcaption>RF Laplacian Stack Level 3</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/VS Laplacian 3.png" alt="Project Image 2"></a>
+                <figcaption>VS Laplacian Stack Level 3</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/RF Laplacian 6.png" alt="Project Image 1"></a>
+                <figcaption>RF Laplacian Stack Level 6</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/VS Laplacian 6.png" alt="Project Image 2"></a>
+                <figcaption>VS Laplacian Stack Level 6</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Circular Mask.png" alt="Project Image 1"></a>
+                <figcaption>Circular Mask</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Vishnu Federer.png" alt="Project Image 1"></a>
+                <figcaption>The Newest Gentlemen's Wimbledon Singles Champion</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <footer>
+        <p>Created by Vishnu Suresh - 2024</p>
+    </footer>
+</body>
+</html>

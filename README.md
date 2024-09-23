@@ -7,3 +7,6 @@ Sergei Mikhailovich Prokudin-Gorskii was a Russian photographer who pioneered co
 The goal of this project is to take the digitized versions of those glass plates and to employ image processing techniques to align the plates to produce a full color photograph with as few artifacts as possible.
 This index.html contains a detailed report and image results for the colorization and alignment algorithms. Specifically, Project Overview, Details of the Algorithm, Results with colored images and Bells and Whistles (Gradient Detection Maps), 
 
+## Fun with Filters and Frequencies
+This project explores the multifarious ways of utilizing image filters and image frequency bands to come up with unique and interesting results.
+These include Edge Detection using Derivative of Gaussian (DoG) Filters, hybridizing images so that what you view changes as a function of your distance from the image, image sharpening, and multi-resolution blending. The power of these methods enables us to put creative ideas into picture! (You might see a Wimbledon Champion you've never heard of before!)
