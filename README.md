@@ -10,3 +10,6 @@ This index.html contains a detailed report and image results for the colorizatio
 ## Fun with Filters and Frequencies
 This project explores the multifarious ways of utilizing image filters and image frequency bands to come up with unique and interesting results.
 These include Edge Detection using Derivative of Gaussian (DoG) Filters, hybridizing images so that what you view changes as a function of your distance from the image, image sharpening, and multi-resolution blending. The power of these methods enables us to put creative ideas into picture! (You might see a Wimbledon Champion you've never heard of before!)
+
+## Face Morphing
+In this project, I produce a "morph" animation of my face into someone else's face (Roger Federer), compute the mean of a population of faces, from the open source FEI database and extrapolate from this population mean to create a caricature of myself. I also use image warping/morphing to come up with a new image of myself with a hypothetical change in gender, among other Bells and Whistles.

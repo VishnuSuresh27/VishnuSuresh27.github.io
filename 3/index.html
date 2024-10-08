@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Processing Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Face Morphing</h1>
+        <h2>Vishnu Suresh</h2>
+        <h2>CS 180: Computer Vision and Computational Photography</h2>
+    </header>
+    
+    <section id="about">
+        <h2>Project Overview</h2>
+        <p>In this project, I produce a "morph" animation of my face into someone else's face (Roger Federer), compute the mean of a population of faces, from the open source FEI database and extrapolate from this population mean to create a caricature of myself. I also use image warping/morphing to come up with a new image of myself with a hypothetical change in gender, among other Bells and Whistles.</p>
+    </section>
+    
+    <section id="defining-correspondences">
+        <h2>Part 1: Defining Corresondences</h2>
+        <p>
+            In the pursuit of morphing one image into another, we need to hand-label a set of corresponding points, henceforth referred as correspendences, in both images. I first align and rescale the source and destination images and then use the provided corresponsence labelling tool for this process. 
+
+            I then compute a Delaunay Triangulation of both these images segment the images into triangles that can be warped.
+
+            <div class="image-container-two">
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/vishnu_aligned_triangle.png" alt="Project Image 1"></a>
+                    <figcaption>Vishnu Aligned, Rescaled and Triangulated</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/roger_aligned_triangle.png" alt="Project Image 2"></a>
+                    <figcaption>Federer Aligned, Rescaled and Triangulated</figcaption>
+                </figure>
+            </div>
+        </p>
+    </section>
+
+    <section id="midway-face">
+        <h2>Part 2: Computing the Midway Face</h2>
+        <p>
+            To compute the mid-way face for me and Angela, I did the following steps:
+            <ol>
+            <li>Compute the average shape using the formula: avg_shape =  1⁄2 (im1_pts + im2_pts)</li>
+            <li>Calculate the inverse of the affine transformation matrix A between the original triangle in each image and the corresponding triangle in the average shape.</li>
+            <li>Do inverse warping with this matrix, using polygon to mask all the pixels.</li>
+            <li>Cross-dissolve by averaging the warped images.</li>
+            </ol>
+        </p>
+            <div class="image-container">
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/vishnu_aligned.png" alt="Project Image 1"></a>
+                    <figcaption>Vishnu Aligned and Rescaled</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/roger-vishnu-midway.png" alt="Project Image 2"></a>
+                    <figcaption>Vishnu and Federer Midway</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/roger_aligned.png" alt="Project Image 2"></a>
+                    <figcaption>Federer Aligned and Rescaled</figcaption>
+                </figure>
+            </div>
+    </section>
+
+    <section id="morph-sequence">
+        <h2>Part 3: The Morph Sequence</h2>
+        <p>
+            In this part I create a function morph that enables me to control the amount I can morph both the geometry and the appearance of the result image. For both these controllables, 0 meant fully Vishnu and 1 meant fully Roger and 0->1 was a transition from Vishnu to Roger. The inverse warp transformation matrix dealt with geometry and cross-dissolve dealt with appearance.
+        </p>
+        <p>
+            I then create a video containing 45 frames of animation numbered 0-45, where frame 0 is identical to me and frame 45 is identical to Roger. In the video, each frame is displayed for 1/30 of a second (ie. 30 fps).
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/morph_animation.gif" alt="Project Image 1"></a>
+                <figcaption>Vishnu Suresh ---> Roger Federer gif!!</figcaption>
+            </figure>
+        </div>
+            
+        <figure>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/8Xer1obF49U" frameborder="0" allowfullscreen></iframe>
+            <figcaption>In video format!!</figcaption>
+        </figure>
+    </section>
+
+    <section id="pop-mean">
+        <h2>Part 4: The "Mean Face" of a Population</h2>
+        <p>
+            In this part, I use the open-source pre-annotated image dataset provided by FEI. I made the choice to use only the happy images from this dataset as it would align better with my image where I was happy and smiling as well. Since this dataset contained only grey-scaled images, I used a grey-scaled version of me for this part. 
+        </p>
+        <p>
+            These were the steps used to implement this part of the project:
+            <ol>
+            <li>Compute the average shape from the "Happy" subset of the FEI dataset images.</li>
+            <li>Morph each of the faces in the dataset into the average shape.</li>
+            <li>Do inverse warping with this matrix, using polygon to mask all the pixels.</li>
+            <li>Compute the average face of the population</li>
+            </ol>
+        </p>
+            <div class="image-container">
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/morphed-into-avg1.png" alt="Project Image 1"></a>
+                    <figcaption>Morphed into average example 1</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/morphed-into-avg2.png" alt="Project Image 1"></a>
+                    <figcaption>Morphed into average example 2 (Sorry for this being scary!)</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/pop-avg.png" alt="Project Image 1"></a>
+                    <figcaption>The average of the population</figcaption>
+                </figure>
+            </div>
+            <p>
+                Here is how I look (and how they look) when morphed:
+            </p>
+            <div class="image-container-two">
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/vishnu-morphed-into-avg.png" alt="Project Image 1"></a>
+                    <figcaption>Vishnu morphed into average geometry</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/avg-morphed-into-vishnu.png" alt="Project Image 1"></a>
+                    <figcaption>Average Face Moprhed into Vishnu's Geometry</figcaption>
+                </figure>
+            </div>
+    </section>
+
+    <section id="caricature">
+        <h2>Part 5: Caricatures: Extrapolating from the Mean</h2>
+        <p>
+            Here, I produce a caricature of my face by extrapolating from the population mean I calculated in the step above. This is done using the formula me + alpha * (avg - me) with alpha values less than 0 or greater than 1. 
+            Here are some results
+        </p>
+            <div class="image-container-two">
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/caric1.7.png" alt="Project Image 1"></a>
+                    <figcaption>Caricature at alpha = 1.7</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/caric-1.7.png" alt="Project Image 1"></a>
+                    <figcaption>Caricature at alpha = -1.7</figcaption>
+                </figure>
+            </div>
+    </section>
+
+    <section id="bells-and-whistles1">
+        <h2>Bells and Whistles #1</h2>
+        <p>
+            I use the power of image morphing to warp myself into an average South Indian woman. The reason I picked this demographic is because I am South Indian and therefore the results generated would be more realistic than others. The reference average South Indian woman picture was scraped from the web. 
+        </p>
+            <div class="image-container">
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/vishnu-woman-shape.png" alt="Project Image 1"></a>
+                    <figcaption>Vishnu's geometry morphed into the South Indian woman</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/vishnu-woman-appearance.png" alt="Project Image 1"></a>
+                    <figcaption>Vishnu's appearance morphed into the South Indian woman</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/vishnu-siwoman.png" alt="Project Image 1"></a>
+                    <figcaption>Vishnu is now someone else!</figcaption>
+                </figure>
+            </div>
+    </section>
+
+    <section id="bells-and-whistles1">
+        <h2>Bells and Whistles #2</h2>
+        <p>
+            India recently won the ICC Men's T20 Cricket World Cup. Here is a music video of some of the prominent members of the team with some fitting music in the background. 
+        </p>
+        <p>
+            The cricketers in the video (in the order of appearance) are Rohit Sharma (Captain), Virat Kohli, Ravichandran Ashwin, Jasprit Bumrah, Rishabh Pant, and Ravindra Jadeja. This video contains non-copyright music and uses Canva Video editing software for stitching the videos together. 
+        </p>
+        <div class="video-container-overview">
+            <figure>
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/G8AdlzyFVaU" frameborder="0" allowfullscreen></iframe>
+                <figcaption>This video shows the morphing sequence of popular Indian Cricketers.</figcaption>
+            </figure>
+        </div>
+    </section>
+    <footer>
+        <p>Created by Vishnu Suresh - 2024</p>
+    </footer>
+</body>
+</html>
+
+
