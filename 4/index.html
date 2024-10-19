@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Processing Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js">
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Image Warping and Mosaicing</h1>
+        <h2>Vishnu Suresh</h2>
+        <h2>CS 180: Computer Vision and Computational Photography</h2>
+    </header>
+    
+    <section id="about">
+        <h2>Project Overview</h2>
+        <p>In this project, I experiment with Image Homography - projecting an image on another plane surface that is not the image plane. An alternative name for this Perspective Projection Transformation. Finally, I will take three groups of three photographs (all at the same Center of Projection) and create an image mosaic (similar to an image panaroma taken on an iPhone) by registering, projective warping, resampling, and compositing them.</p>
+    </section>
+    
+    <section id="shoot-pictures">
+        <h2>Part 1: Shoot the Pictures</h2>
+        <p>
+            In this step, I use my trusted iPhone to click pictures. I decided to take three groups of three pictures each which I will warp and mosaic together later in this report. The most important technique that I employed during my photo-taking endeavour was to make sure that the lens of my phone camera (serving as the center of projection) always remained the same. I simply rotate the phone about an axis line passing through the center of projection. 
+
+            Here are the original images.
+
+            <div class="image-container-three">
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/patio1.jpeg"></a>
+                    <figcaption>View from my Patio - Image 1</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/patio2.jpeg"></a>
+                    <figcaption>View from my Patio - Image 2</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/patio3.jpeg"></a>
+                    <figcaption>View from my Patio - Image 3</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/hall1.jpg"></a>
+                    <figcaption>Townhall - Image 1</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/hall2.jpg"></a>
+                    <figcaption>Townhall - Image 2</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/hall3.jpg"></a>
+                    <figcaption>Townhall - Image 3</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/mansion1.jpg"></a>
+                    <figcaption>Mansion - Image 1</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/mansion2.jpg"></a>
+                    <figcaption>Mansion - Image 2</figcaption>
+                </figure>
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/mansion3.jpg"></a>
+                    <figcaption>Mansion - Image 3</figcaption>
+                </figure>
+            </div>
+        </p>
+    </section>
+
+    <section id="recover-homographies">
+        <h2>Part 2: Recover Homographies</h2>
+        <p>
+            The next step involved calculating the homography matrices between pairs of images to recover the transformations required to warp one image into another. I implemented a function called <code>computeH</code> which uses point correspondences between two images to compute a homography matrix.
+        </p>
+        <p>The homography matrix was used to warp images into the same perspective, which allowed for the subsequent blending step to create a seamless mosaic.</p>
+
+        <h3>Mathematical Explanation</h3>
+        <p>
+            To compute the homography matrix, we use a set of corresponding points between the source and destination images. Let's denote the source points as \( (x, y) \) and the destination points as \( (x', y') \). The goal is to find a transformation matrix \( H \) such that:
+        </p>
+        <p style="text-align: center;">
+            \[
+            \begin{bmatrix}
+            w'x' \\
+            w'y' \\
+            w'
+            \end{bmatrix}
+            = H \cdot 
+            \begin{bmatrix}
+            x \\
+            y \\
+            1
+            \end{bmatrix}
+            \]
+        </p>
+        <p>
+            The homography matrix \( H \) is a 3x3 matrix that relates the coordinates in one image to the coordinates in the other image:
+        </p>
+        <p style="text-align: center;">
+            \[
+            H = 
+            \begin{bmatrix}
+            a & b & c \\
+            d & e & f \\
+            g & h & 1
+            \end{bmatrix}
+            \]
+        </p>
+        <p>
+            To find \( H \), we need to set up a system of linear equations using multiple point correspondences. For each pair of corresponding points, we get two equations:
+        </p>
+        <p style="text-align: center;">
+            \[
+            \begin{cases}
+            ax + by + c = wx' \\
+            dx + ey + f = wy' \\
+            gx + hy + 1 = w
+            \end{cases}
+            \implies
+            \begin{cases}
+            ax + by + c = (gx + hy + 1) x' \\
+            dx + ey + f = (gx + hy + 1) y'
+            \end{cases}
+            \implies
+            \begin{cases}
+            ax + by + c - gx x' - hy x' = x' \\
+            dx + ey + f - gx y' - hy y' = y'
+            \end{cases}
+            \]
+        </p>
+        <p>
+            Rearranging these equations gives us a system of equations that can be represented in matrix form:
+        </p>
+        <p style="text-align: center;">
+            \[
+            \begin{bmatrix}
+            x & y & 1 & 0 & 0 & 0 & -xx' & -yx' \\
+            0 & 0 & 0 & x & y & 1 & -xy' & -yy'
+            \end{bmatrix}
+            \begin{bmatrix}
+            a \\
+            b \\
+            c \\
+            d \\
+            e \\
+            f \\
+            g \\
+            h
+            \end{bmatrix}
+            =
+            \begin{bmatrix}
+            x' \\
+            y'
+            \end{bmatrix}
+            \]
+        </p>
+        <p style="text-align: center;">
+            \[
+            A \mathbf{h} = \mathbf{b}
+            \]
+        </p>
+        <p>
+            Where \( A \) is a matrix that depends on the source and destination coordinates, \( \mathbf{h} \) is a vector containing the unknown elements of the homography matrix, and \( \mathbf{b} \) is a vector of destination coordinates. Given enough correspondences, we can solve this system of equations for \( \mathbf{h} \) using a least squares approach.
+        </p>
+        <h3>Least Squares Solution</h3>
+        <p>
+            To solve for the homography matrix elements, we need at least four pairs of corresponding points, which provides eight equations. More correspondences provide an overdetermined system, which we can solve using the least squares method. The least squares solution minimizes the error between the predicted destination coordinates and the actual coordinates.
+        </p>
+        <p>
+            The least squares solution can be found by solving the following equation:
+        </p>
+        <p style="text-align: center;">
+            \[
+            \mathbf{h} = (A^T A)^{-1} A^T \mathbf{b}
+            \]
+        </p>
+        <p>
+            This equation provides the best fit for the homography matrix by minimizing the squared differences between the actual and projected points.
+        </p>
+        
+    </section>
+
+    <section id="warp-images">
+        <h2>Part 3: Warp the Images</h2>
+        <p>
+            Using the computed homography matrix, I applied inverse warping to transform the images into a common perspective. The <code>inverseWarpImage</code> function was used to project an image onto the final canvas and align it properly. The results of the individual warped images were visualized as intermediate steps.
+        </p>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/warped_patio1.jpg" alt="Warped Patio Image"></a>
+                <figcaption>Warped Patio Image 1 from 2</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio2.jpeg" alt="Warped Patio Image"></a>
+                <figcaption>Patio Image 2 unchanged</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/warped_patio3.jpg" alt="Warped Patio Image"></a>
+                <figcaption>Warped Patio Image 3 from 2</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/warped_hall1.jpg" alt="Warped Townhall Image"></a>
+                <figcaption>Warped Townhall Image 1 from 2</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/hall2.jpg" alt="Warped Townhall Image"></a>
+                <figcaption>Townhall Image 2 unchanged</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/warped_hall3.jpg" alt="Warped Townhall Image"></a>
+                <figcaption>Warped Townhall Image 3 from 2</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/warped_mansion1.jpg" alt="Warped Mansion Image"></a>
+                <figcaption>Warped Mansion Image 1 from 2</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/mansion2.jpg" alt="Warped Mansion Image"></a>
+                <figcaption>Mansion Image 2 unchanged</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/warped_mansion3.jpg" alt="Warped Mansion Image"></a>
+                <figcaption>Warped Mansion Image 3 from 2</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="blend-mosaic">
+        <h2>Part 4: Blend the Images into a Mosaic</h2>
+        <p>
+            After aligning the images, the next step was to blend them together seamlessly. I used a distance transform-based blending technique to ensure smooth transitions between overlapping images. The distance transform values were normalized and used as blending weights, providing a feathered transition across the overlapping areas. Here is an example of the final mosaic.
+        </p>
+        <p>
+            The distance transform sets each pixel inside a region (here, inside a projected image's bounding box) to be the distance to the nearest edge. We'll be using Euclidean distance as the measurement, and the final result is normalized to range from 0 to 1.
+        </p>
+        <p> These are the normalized distance transforms for the images of the view from the patio</p>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_wide_canvas_dt.png"></a>
+                <figcaption>Normalized 0-1 distance transform of Patio 1 image</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio2_wide_canvas_dt.png"></a>
+                <figcaption>Normalized 0-1 distance transform of Patio 2 image</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio3_wide_canvas_dt.png"></a>
+                <figcaption>Normalized 0-1 distance transform of Patio 3 image</figcaption>
+            </figure>
+        </div>
+        <p>
+            One note on implementation detail: My algorithm of generating the canvas of the final stitched image was as follows: I first figure out what is the eventual extent, what I call as min_x_mosaic, min_y_mosaic, max_x_mosaic, max_y_mosaic. Then I place each image on the final canvas. So now I have my three images on the same final canvas dimensions. Now doing weighted average with three images with same dimension (the final canvas dimension) is relatively easier. 
+        </p>
+
+        <h3>Creating the Mosaic of the view from my Patio</h3>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1.jpeg"></a>
+                <figcaption>View from my Patio - Source Image 1</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio2.jpeg"></a>
+                <figcaption>View from my Patio - Source Image 2</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio3.jpeg"></a>
+                <figcaption>View from my Patio - Source Image 3</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_wide_canvas.jpg"></a>
+                <figcaption>First (Warped) Image of Patio on final canvas</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio2_wide_canvas.jpg"></a>
+                <figcaption>Second Image of Patio on final canvas</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio3_wide_canvas.jpg"></a>
+                <figcaption>Third (Warped) Image of Patio on final canvas</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg" alt="Patio Mosaic"></a>
+                <figcaption>Final Mosaic of Patio Images</figcaption>
+            </figure>
+        </div>
+
+
+        <h3>Creating the Mosaic of the view of the Townhall</h3>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/hall1.jpg"></a>
+                <figcaption>Townhall - Source Image 1</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/hall2.jpg"></a>
+                <figcaption>Townhall - Source Image 2</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/hall3.jpg"></a>
+                <figcaption>Townhall - Source Image 3</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/townhall1_wide_canvas.jpg"></a>
+                <figcaption>First (Warped) Image of Townhall on final canvas</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/townhall2_wide_canvas.jpg"></a>
+                <figcaption>Second Image of Townhall on final canvas</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/townhall3_wide_canvas.jpg"></a>
+                <figcaption>Third (Warped) Image of Townhall on final canvas</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/townhall_blended_image.jpg" alt="Patio Mosaic"></a>
+                <figcaption>Final Mosaic of Townhall Images</figcaption>
+            </figure>
+        </div>
+
+
+        <h3>Creating the Mosaic of the Mansion</h3>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/mansion1.jpg"></a>
+                <figcaption>Mansion - Source Image 1</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/mansion2.jpg"></a>
+                <figcaption>Mansion - Source Image 2</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/mansion3.jpg"></a>
+                <figcaption>Mansion - Source Image 3</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/mansion1_wide_canvas.jpg"></a>
+                <figcaption>First (Warped) Image of Mansion on final canvas</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/mansion2_wide_canvas.jpg"></a>
+                <figcaption>Second Image of Mansion on final canvas</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/mansion3_wide_canvas.jpg"></a>
+                <figcaption>Third (Warped) Image of Mansion on final canvas</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/mansion_blended_image.jpg" alt="Mansion Mosaic"></a>
+                <figcaption>Final Mosaic of Mansion Images</figcaption>
+            </figure>
+        </div>
+
+    </section>
+
+    <section id="image-rectification">
+        <h2>Part 5: Image Rectification</h2>
+        <p>
+            One of the applications of homographies is image rectification. This involves transforming an image so that a particular plane becomes fronto-parallel, effectively correcting the perspective distortion. Below is an example where I rectified an image of a room.
+        </p>
+        
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/room.jpg" alt="Rectified Room"></a>
+                <figcaption>Original Image of a Painting</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Rectified Image of the Painting (Look at the the tiny table, its now a square)</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/table.jpeg" alt="Rectified Room"></a>
+                <figcaption>Original Image of my study table</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_table.jpg" alt="Rectified Table"></a>
+                <figcaption>Rectified Image of my study table (Look at my laptop and notebook, they are perfect rectangles now)</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="conclusion">
+        <h2>Conclusion</h2>
+        <p>
+            This project involved a comprehensive exploration of homography-based image processing, from capturing photographs and calculating homographies to blending images into mosaics and rectifying perspectives. These techniques have a wide range of applications, such as creating panoramic images, removing perspective distortions, and even enhancing visual storytelling by seamlessly combining multiple views.
+        </p>
+    </section>
+
+    <footer>
+        <p>Created by Vishnu Suresh - 2024</p>
+    </footer>
+</body>
+</html>

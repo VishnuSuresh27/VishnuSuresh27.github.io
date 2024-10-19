@@ -13,3 +13,6 @@ These include Edge Detection using Derivative of Gaussian (DoG) Filters, hybridi
 
 ## Face Morphing
 In this project, I produce a "morph" animation of my face into someone else's face (Roger Federer), compute the mean of a population of faces, from the open source FEI database and extrapolate from this population mean to create a caricature of myself. I also use image warping/morphing to come up with a new image of myself with a hypothetical change in gender, among other Bells and Whistles.
+
+## Image Warping and Mosaicing
+In this project, I experiment with Image Homography - projecting an image on another plane surface that is not the image plane. An alternative name for this Perspective Projection Transformation. Finally, I will take three groups of three photographs (all at the same Center of Projection) and create an image mosaic (similar to an image panaroma taken on an iPhone) by registering, projective warping, resampling, and compositing them
