@@ -19,7 +19,12 @@
     
     <section id="about">
         <h2>Project Overview</h2>
-        <p>In this project, I experiment with Image Homography - projecting an image on another plane surface that is not the image plane. An alternative name for this Perspective Projection Transformation. Finally, I will take three groups of three photographs (all at the same Center of Projection) and create an image mosaic (similar to an image panaroma taken on an iPhone) by registering, projective warping, resampling, and compositing them.</p>
+        <p>
+            In this project, I experiment with Image Homography - projecting an image on another plane surface that is not the image plane. An alternative name for this Perspective Projection Transformation. Finally, I will take four groups of three photographs (all at the same Center of Projection) and create an image mosaic (similar to an image panaroma taken on an iPhone) by registering, projective warping, resampling, and compositing them.
+        </p>
+        <p>
+            In the later parts of this project, we detecting corner features in an image, extracting a Feature Descriptor for each feature point, match these feature descriptors between two images, use a robust method (RANSAC) to compute a homography and then proceed as in the first part to produce a mosaic.
+        </p>
     </section>
     
     <section id="shoot-pictures">
@@ -518,9 +523,15 @@
                 <figcaption>An example of a feature descriptors I created for my first interest point of patio image 1</figcaption>
             </figure>
         </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/feature_descriptors_patio1_display.png"></a>
+                <figcaption>Unfiltered list of all feature descriptors of all my feature descriptors for patio 1</figcaption>
+            </figure>
+        </div>
     </section>
 
-    <section id="feature-descriptor">
+    <section id="feature-matching">
         <h2>Part 9: Feature Matching (using David Lowe's Trick aka Soviet Grandma Trick)</h2>
         <p>
             With features extracted, the next step is to match features together between two images to form correspondences. In order to do this, I use an nearest neigbor approach. For finding feature correspondences between say image 1 and image 2, I iterate through each feature descriptor in image 1 and then compare the Euclidean distance between this and all the feature descriptors of image 2. I only store those feature descriptors maps who have a 1st-NN-Neighbor to 2nd-NN-Neighbor ratio less than 0.1 roughly following the suggestion from the MOPS paper.
@@ -537,7 +548,7 @@
         </div>
     </section>
 
-    <section id="feature-descriptor">
+    <section id="ransac">
         <h2>Part 10: RANdom SAmple Consensus (RANSAC)</h2>
         <p>
             Although Lowe's trick does reduce the number of outliers, there will still inevitably be several incorrect pairs remaining. The issue with these incorrect pairs in the correspondence points is that least-squares is not very robust against outliers; a single pair of incorrect points can skew the least-squares result wildly, which also skews the computed homography.
@@ -562,7 +573,7 @@
         </div>
     </section>
 
-    <section id="feature-descriptor">
+    <section id="results">
         <h2>Results</h2>
         <p>
             Comparing manual results with automatic results.
@@ -609,6 +620,116 @@
             </figure>
         </div>
     </section>
+
+    <section id="bw">
+        <h2>Bells and Whistles - Rotation Invariance</h2>
+        <p>
+            To make feature descriptors rotation-invariant, we align each 8x8 patch according to the dominant gradient direction at the interest point. Below, we outline the mathematical steps.
+        </p>
+        
+        <h3>1. Calculating the Gradient</h3>
+        <p>
+            Given an interest point at coordinates \( (x, y) \), we calculate the gradient of the image intensity around this point using the Sobel operator. The Sobel operator provides partial derivatives of intensity in the x and y directions:
+        </p>
+        <p>
+            \[
+            \nabla_x = \frac{\partial I}{\partial x}, \quad \nabla_y = \frac{\partial I}{\partial y}
+            \]
+        </p>
+        <p>
+            where \( \nabla_x \) and \( \nabla_y \) represent the rate of change of intensity along the x and y axes, respectively.
+        </p>
+        
+        <h3>2. Determining the Orientation</h3>
+        <p>
+            Using the partial derivatives \( \nabla_x \) and \( \nabla_y \), we compute the orientation \( \theta \) of the gradient at \( (x, y) \). The orientation is given by:
+        </p>
+        <p>
+            \[
+            \theta = \arctan\left(\frac{\nabla_y}{\nabla_x}\right)
+            \]
+        </p>
+        <p>
+            where \( \theta \) represents the angle of the gradient with respect to the x-axis.
+        </p>
+        
+        <h3>3. Constructing the Rotation Matrix</h3>
+        <p>
+            To align the patch according to the orientation \( \theta \), we construct a 2D rotation matrix \( R(\theta) \). For a rotation by an angle \( \theta \), the rotation matrix is:
+        </p>
+        <p>
+            \[
+            R(\theta) = \begin{bmatrix} \cos \theta & -\sin \theta \\ \sin \theta & \cos \theta \end{bmatrix}
+            \]
+        </p>
+        <p>
+            This matrix rotates a point \( (x', y') \) around the origin by angle \( \theta \). In our case, we want to rotate the 40x40 patch around its center.
+        </p>
+        
+        <h3>4. Applying the Rotation to the Patch</h3>
+        <p>
+            To rotate the patch, we first center it on the interest point. Then, we use an affine transformation with the rotation matrix \( R(\theta) \) to adjust the patch's orientation. The rotated patch is sampled as follows:
+        </p>
+        <p>
+            \[
+            \begin{bmatrix} x' \\ y' \end{bmatrix} = R(\theta) \begin{bmatrix} x - x_c \\ y - y_c \end{bmatrix} + \begin{bmatrix} x_c \\ y_c \end{bmatrix}
+            \]
+        </p>
+        <p>
+            where \( (x_c, y_c) \) is the center of the patch, and \( (x', y') \) are the new coordinates after rotation.
+        </p>
+        
+        <h3>5. Downsampling the Rotated Patch</h3>
+        <p>
+            After rotating the patch, we downsample it to 8x8 by taking every 5th pixel. This reduces the size and maintains the key structural information of the patch in its new orientation, ensuring it remains rotation-invariant.
+        </p>        
+        </div>
+
+        <h3>Creating the Mosaic of the view of the University Church Purdue using Rotation Invariant Features</h3>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/church1_wide_canvas_r.jpg"></a>
+                <figcaption>First (Warped) Image of University Church Purdue on final canvas using Rotation Invariant Features</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/church2_wide_canvas_r.jpg"></a>
+                <figcaption>Second Image of University Church Purdue on final canvas using Rotation Invariant Features</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/church3_wide_canvas_r.jpg"></a>
+                <figcaption>Third (Warped) Image of University Church Purdue on final canvas using Rotation Invariant Features</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/church_automatic_r.jpg" alt="Patio Mosaic"></a>
+                <figcaption>Final Mosaic of University Church Purdue Images using Rotation Invariant Features</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/church_automatic.jpg" alt="Patio Mosaic"></a>
+                <figcaption>Final Mosaic of University Church Purdue Images wihout using Rotation Invariant Features</figcaption>
+            </figure>
+        </div>
+        <p>
+            When compared to the results of the automatic mosaic without rotation invariant features, these results are marginally better. However, the manual point selection still seems to do better. The presence of the seam in all these three cases could potentially mean that there was a slight shift in the centre of projection of the camera between image 2 and image 3 of the church. But, rotation invariant feature descriptors do bring in marginal improvement in image quality. 
+        </p>
+    </section>
+
+    <section id="fun">
+        <h2>Bells and Whistles - Be Creative</h2>
+        <p>
+            Using the power of homography to create a clone of my roommate!
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/andy_clone.png"></a>
+                <figcaption>Andy cloned!</figcaption>
+            </figure>
+        </div>
+    </section>
+
 
     <section id="conclusion">
         <h2>Conclusion - Coolest Thing I learned?</h2>
