@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Processing Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js">
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Power of Diffusion Models</h1>
+        <h2>Vishnu Suresh</h2>
+        <h2>CS 180: Computer Vision and Computational Photography</h2>
+    </header>
+    
+    <section id="about">
+        <h2>Project Overview</h2>
+        <p>
+            In this project, I explore the power of diffusion models in generating high-quality images. In Part A, I generate images using a pretrained diffusion model called DeepFloyd. In Part B, I train a diffusion model on PyTorch's MNIST dataset.
+            The Random Seed used for generating the images in Part A is 180. 
+        </p>
+    </section>
+    
+    <section id="sampling-pretrained">
+        <h2>Part 0: Sampling from a Pretrained Diffusion Model</h2>
+        <p>
+            Here are the images sampled from the pretrained diffusion model at varying number of inference steps (0, 20, 50).
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1.jpeg"></a>
+                <figcaption>View from my Patio - Image 1</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1.jpeg"></a>
+                <figcaption>View from my Patio - Image 1</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1.jpeg"></a>
+                <figcaption>View from my Patio - Image 1</figcaption>
+            </figure>
+        </div>
+        <p>
+            Trend: As the number of inference steps increases (at least in the values I tried: 5, 20, 50), the images start looking more realistic and better align with the prompt. 
+        </p>
+    </section>
+
+    <section id="forward-process">
+        <h2>Part 1.1: Implementing the Forward Process of a Diffusion Model</h2>
+        <p>
+            Here, I implemented the forward process of a diffusion model. The forward process is the process of adding noise to the image. The forward process is defined by the following equation:
+            \[ q(x_t | x_{t-1}) = \mathcal{N}(x_t; \sqrt{\alpha_t}x_{t-1}, (1 - \alpha_t)I) \]
+        </p>
+        <p>
+            Below is the Campanile image through the forward process at different timesteps (0, 250, 500, 750). Note, these are upsampled versions of the original images using DeepFloyd II.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/campanile1.jpeg"></a>
+                <figcaption>Campanile through the forward process at timestep 0, 250, 500, 750</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="classical-diffusion">
+        <h2>Part 1.2: Classical Denoising</h2>
+        <p>
+            In classical denoising, we naively try to denoise an image by using a Gaussian blurring kernel. Here are the original images and the classical denoised images.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/campanile1.jpeg"></a>
+                <figcaption>Campanile through the forward process at timestep 0, 250, 500, 750</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/campanile1.jpeg"></a>
+                <figcaption>Campanile through the classical denoising process</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="one-step-denoising">
+        <h2>Part 1.3: One-Step Denoising</h2>
+        <p>
+            We use the Stage 1 UNet of the DeepFloyd model to denoise the image using the prompt "a high quality photo of a [object]" where the object is the noisy image. We visualize the original image, the noisy image, and the estimate of the original image.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/campanile1.jpeg"></a>
+                <figcaption>Original Image, Noisy Image, and One-Step Denoised Image at timestep 250</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/campanile1.jpeg"></a>
+                <figcaption>Original Image, Noisy Image, and One-Step Denoised Image at timestep 500</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/campanile1.jpeg"></a>
+                <figcaption>Original Image, Noisy Image, and One-Step Denoised Image at timestep 750</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="iters-denoising">
+        <h2>Part 1.4: Iterative Denoising</h2>
+        <p>
+            In iterative denoising, we iteratively apply the Stage 1 UNet of the DeepFloyd model to denoise the image. We visualize the original image, the noisy image, and the estimate of the original image at each timestep. We incrementally denoise the image by denoising the noisy image with the UNet and then taking this image as the new noisy image. This leads to better results than one-step denoising.
+        </p>
+        
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/room.jpg" alt="Rectified Room"></a>
+                <figcaption>Noisy Image at timestep 690</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Noisy Image at timestep 540</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Noisy Image at timestep 390</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/room.jpg" alt="Rectified Room"></a>
+                <figcaption>Noisy Image at timestep 240</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Noisy Image at timestep 90</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Iterative Denoised Image Result</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/room.jpg" alt="Rectified Room"></a>
+                <figcaption>One-Step Denoised Image Result</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Classical Denoised Image Result</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Original Image</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="diffusion-model-sampling">
+        <h2>Part 1.5: Diffusion Model Sampling</h2>
+        <p>
+            Now we use the iterative denoising method to sample from the diffusion model. Instead of denoising a noisy image, we generate images from scratch. We start with a random noise image and iteratively denoise it using the Stage 1 UNet of the DeepFloyd model. The quality of the images are not spectacular and this is fixed later using Classifier-Free Guidance.
+        </p>
+        <div class="image-container-three"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/room.jpg" alt="Rectified Room"></a>
+                <figcaption>Sample 1</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Sample 2</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Sample 3</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_corners.jpg"></a>
+                <figcaption>Sample 4</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio2_corners.jpg"></a>
+                <figcaption>Sample 5</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="cfg">
+        <h2>Part 1.6: Classifier-Free Guidance</h2>
+        <p>
+            You may have noticed that some of the generated images in the prior section are not very good. In order to greatly improve image quality (at the expense of image diversity), we can use a technique called Classifier-Free Guidance. In CFG, we compute both a noise estimate conditioned on a text prompt, and an unconditional noise estimate. We denote these \( \epsilon_c \) and \( \epsilon_u \). Then, we let our new noise estimate be 
+            \[
+            \epsilon = \epsilon_u + \gamma (\epsilon_c - \epsilon_u)
+            \]
+            where \( \gamma \) controls the strength of CFG. Notice that for \( \gamma = 0 \), we get an unconditional noise estimate, and for \( \gamma = 1 \) we get the conditional noise estimate. The magic happens when \( \gamma > 1 \). For the following samples, I used \( \gamma = 7 \).
+        </p>
+        
+        <div class="image-container-three"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/room.jpg" alt="Rectified Room"></a>
+                <figcaption>Sample 1 with Classifier Free Guidance</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Sample 2 with Classifier Free Guidance</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Sample 3 with Classifier Free Guidance</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_corners.jpg"></a>
+                <figcaption>Sample 4 with Classifier Free Guidance</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio2_corners.jpg"></a>
+                <figcaption>Sample 5 with Classifier Free Guidance</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="image-translation">
+        <h2>Part 1.7: Image Translation</h2>
+        <p>
+            In part 1.4, we take a real image, add noise to it, and then denoise. This effectively allows us to make edits to existing images. The more noise we add, the larger the edit will be. This works because in order to denoise an image, the diffusion model must to some extent "hallucinate" new things -- the model has to be "creative." Another way to think about it is that the denoising process "forces" a noisy image back onto the manifold of natural images.
+        </p>
+        <p>
+            Here, we're going to take the original test image, noise it a little, and force it back onto the image manifold without any conditioning. Effectively, we're going to get an image that is similar to the test image (with a low-enough noise level). This follows the SDEdit algorithm. You should see a series of "edits" to the original image, gradually matching the original image closer and closer.
+        </p>
+        <div class="image-container-three"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/room.jpg" alt="Rectified Room"></a>
+                <figcaption>Campanile Noise Level 1</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Campanile Noise Level 3</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Campanile Noise Level 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/room.jpg" alt="Rectified Room"></a>
+                <figcaption>Campanile Noise Level 7</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Campanile Noise Level 10</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Campanile Noise Level 20</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/campanile1.jpeg"></a>
+                <figcaption>Original Campanile</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/room.jpg" alt="Rectified Room"></a>
+                <figcaption>Roger Federer Noise Level 1</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Roger Federer Noise Level 3</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Roger Federer Noise Level 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/room.jpg" alt="Rectified Room"></a>
+                <figcaption>Roger Federer Noise Level 7</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Roger Federer Noise Level 10</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Roger Federer Noise Level 20</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/campanile1.jpeg"></a>
+                <figcaption>Original Roger Federer</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/room.jpg" alt="Rectified Room"></a>
+                <figcaption>Wimbledon Trophy Noise Level 1</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Wimbledon Trophy Noise Level 3</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Wimbledon Trophy Noise Level 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/room.jpg" alt="Rectified Room"></a>
+                <figcaption>Wimbledon Trophy Noise Level 7</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Wimbledon Trophy Noise Level 10</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/rectified_room.jpg" alt="Rectified Room"></a>
+                <figcaption>Wimbledon Trophy Noise Level 20</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/campanile1.jpeg"></a>
+                <figcaption>Original Wimbledon Trophy</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="1.7">
+        <h2>Part 1.7.1: Editing Hand-Drawn and Web Images</h2>
+        <p>
+            This procedure works particularly well if we start with a nonrealistic image (e.g. painting, a sketch, some scribbles) and project it onto the natural image manifold.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Web Image to Edit</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Web Image Edited Noise Level 1, 3, 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Web Image Edited Noise Level 7, 10, 20</figcaption>
+            </figure>
+        </div>
+        <p>
+            Now onto hand-drawn images.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Hand-Drawn Image to Edit - Cricket Stumps, Bat and Ball</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Hand-Drawn Image Edited Noise Level 1, 3, 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Hand-Drawn Image Edited Noise Level 7, 10, 20</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Hand-Drawn Image to Edit - Rings scribbled</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Hand-Drawn Image Edited Noise Level 1, 3, 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Hand-Drawn Image Edited Noise Level 7, 10, 20</figcaption>
+            </figure>
+        </div>
+
+        <h2>Part 1.7.2: Inpainting</h2>
+        <p>
+            We can use the same procedure to implement inpainting (following the RePaint paper). That is, given an image \( x_{\text{orig}} \), and a binary mask \( \mathbf{m} \), we can create a new image that has the same content where \( \mathbf{m} = 0 \), but new content wherever \( \mathbf{m} = 1 \).
+
+            To do this, we can run the diffusion denoising loop. But at every step, after obtaining \( x_t \), we "force" \( x_t \) to have the same pixels as \( x_{\text{orig}} \) where \( \mathbf{m} = 0 \), i.e.:
+
+            \[
+            x_t \leftarrow \mathbf{m} x_t + (1 - \mathbf{m}) \cdot \text{forward}(x_{\text{orig}}, t)
+            \]
+
+            Essentially, we leave everything inside the edit mask alone, but we replace everything outside the edit mask with our original image -- with the correct amount of noise added for timestep \( t \).
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Campanile Image, Mask and what we are replacing</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Result of inpainting FIGURE OUT WHY THERE IS NOISE</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Mumbai Skyline Image, Mask and what we are replacing</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Result of inpainting FIGURE OUT WHY THERE IS NOISE</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Wankhede Stadium Image, Mask and what we are replacing</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Result of inpainting FIGURE OUT WHY THERE IS NOISE</figcaption>
+            </figure>
+        </div>
+
+        <h2>Part 1.7.3: Text-Conditioned Image-to-Image Translation</h2>
+        <p>
+            Now, we will do the same thing as the previous section, but guide the projection with a text prompt. This is no longer pure "projection to the natural image manifold" but also adds control using language. This is simply a matter of changing the prompt from "a high quality photo" to any prompt embedding.
+        </p>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Campanile conditioned on "a rocket ship" Noise Level 1, 3, 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Campanile conditioned on "a rocket ship" Noise Level 7, 10, 20</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>ROger Federer conditioned on "a photo of a hipster barista" Noise Level 1, 3, 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Roger Federer conditioned on "a photo of a hipster barista" Noise Level 7, 10, 20</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Wimbledon trophy conditioned on "a pencil" Noise Level 1, 3, 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_preransac.jpg"></a>
+                <figcaption>Wimbledon trophy conditioned on "a pencil" Noise Level 7, 10, 20</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="visual-anagram">
+        <h2>Part 1.8: Visual Anagrams</h2>
+        <p>
+            In this part, we are finally ready to implement Visual Anagrams and create optical illusions with diffusion models. In this part, we will create an image that looks like "an oil painting of people around a campfire", but when flipped upside down will reveal "an oil painting of an old man".
+
+            To do this, we will denoise an image \( x_t \) at step \( t \) normally with the prompt "an oil painting of an old man", to obtain noise estimate \( \epsilon_1 \). But at the same time, we will flip \( x_t \) upside down, and denoise with the prompt "an oil painting of people around a campfire", to get noise estimate \( \epsilon_2 \). We can flip \( \epsilon_2 \) back, to make it right-side up, and average the two noise estimates. We can then perform a reverse diffusion step with the averaged noise estimate.
+
+            The full algorithm will be:
+
+            \[
+            \epsilon_1 = \text{UNet}(x_t, t, p_1)
+            \]
+
+            \[
+            \epsilon_2 = \text{flip}(\text{UNet}(\text{flip}(x_t), t, p_2))
+            \]
+
+            \[
+            \epsilon = \frac{\epsilon_1 + \epsilon_2}{2}
+            \]
+
+            where UNet is the diffusion model UNet from before, \(\text{flip}(\cdot)\) is a function that flips the image, and \( p_1 \) and \( p_2 \) are two different text prompt embeddings. And our final noise estimate is \( \epsilon \).
+        </p>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_ransac.jpg"></a>
+                <figcaption>An oil painting of an Old Man</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio2_feature_map_ransac.jpg"></a>
+                <figcaption>Same image flipped upside down - an oil painting of people around a campfire</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_ransac.jpg"></a>
+                <figcaption>An oil painting of a snowy mountain village</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio2_feature_map_ransac.jpg"></a>
+                <figcaption>Same image flipped upside down - an oil painting of an old man</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_ransac.jpg"></a>
+                <figcaption>A lithograph of waterfalls</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio2_feature_map_ransac.jpg"></a>
+                <figcaption>Same image flipped upside down - a lithograph of a skull</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="hybrid"></section>
+        <h2>Part 1.9: Hybrid Images</h2>
+        <p>
+            In this part we'll implement Factorized Diffusion and create hybrid images just like in project 2.
+
+            In order to create hybrid images with a diffusion model we can use a similar technique as above. We will create a composite noise estimate \( \epsilon \), by estimating the noise with two different text prompts, and then combining low frequencies from one noise estimate with high frequencies of the other. The algorithm is:
+
+            \[
+            \epsilon_1 = \text{UNet}(x_t, t, p_1)
+            \]
+
+            \[
+            \epsilon_2 = \text{UNet}(x_t, t, p_2)
+            \]
+
+            \[
+            \epsilon = f_{\text{lowpass}}(\epsilon_1) + f_{\text{highpass}}(\epsilon_2)
+            \]
+
+            where UNet is the diffusion model UNet, \( f_{\text{lowpass}} \) is a low pass function, \( f_{\text{highpass}} \) is a high pass function, and \( p_1 \) and \( p_2 \) are two different text prompt embeddings. Our final noise estimate is \( \epsilon \). Please show an example of a hybrid image using this technique (you may have to run multiple times to get a really good result for the same reasons as above).
+        </p>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_ransac.jpg"></a>
+                <figcaption>A lithograph of a skull</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio2_feature_map_ransac.jpg"></a>
+                <figcaption>A lithograph of waterfalls</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_ransac.jpg"></a>
+                <figcaption>A pencil</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio2_feature_map_ransac.jpg"></a>
+                <figcaption>A rocket ship</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio1_feature_map_ransac.jpg"></a>
+                <figcaption>A lithograph of a skull</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio2_feature_map_ransac.jpg"></a>
+                <figcaption>An oil painting of an old man</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="part-b-implenenting-unet"></section>
+        <h1>Onto to Part B Part 1: Training a Single-Step Denoising UNet</h2>
+        <h2>Part 1.1 Implementing the Unet</h2>
+        <p>
+            The following is the UNet architecture that I implemented.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Unconditional UNet Architecture</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="part-b-implenenting-unet"></section>
+        <h2>Part 1.2 Using the UNet to Train a Denoiseer</h2>
+        <p>
+            Before training, we need to first come up with a noising process. We can do this by first sampling a random image from the training set, and then applying a noising process to it. Below is the visualization of the different noising processes with sigma values [0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0].
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Varying levels of noise on MNIST digits</figcaption>
+            </figure>
+        </div>
+
+        <h2>Part 1.2.1 Training</h2>
+        <p>
+            Below is the training loss curve and some results after training. MNIST's training set is used for this part and is noised with sigma value 0.5.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Training Loss Curve</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Results on digits from the test set after 1 epoch of training</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Results on digits from the test set after 5 epochs of training</figcaption>
+            </figure>
+        </div>
+
+        <h2>Part 1.2.2 Out of Distribution Testing</h2>
+        <p>
+            The Denoiser is trained on MNIST digits denoised on sigma value 0.5. Below are some results on out of distribution testing with different sigma values.
+        </p>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Result for Number 2 at sigma value 0.0</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Result for Number 2 at sigma value 0.2</figcaption>
+            </figure>
+            </figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Result for Number 2 at sigma value 0.4</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Result for Number 2 at sigma value 0.5</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Result for Number 2 at sigma value 0.6</figcaption>
+            </figure>
+            </figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Result for Number 2 at sigma value 0.8</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Result for Number 2 at sigma value 1.0</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="Part 2 - Training a Diffusion Model">
+        <h1>Part 2 - Training a Diffusion Model</h1>
+        <p>
+            In this part, we will train a diffusion model on the MNIST dataset. Key changes to note are that now the UNet is not exactly a denoiser but it is now a noise predictor. So the provlem reduces to training a model that predicts the noise in an image. This eventually works out since we can come up with a schedule of cumulative alpha products and beta values that can help us scale the predicted noise and denoise the images. 
+        </p>
+
+        <h2>Part 2.1 Adding Time Conditioning to UNet</h2>
+        <p>
+            The following is the UNet architecture that I implemented to embed the time step as a conditioning to the model.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Time Conditioned UNet Architecture</figcaption>
+            </figure>
+        </div>
+
+        <h2>Part 2.2 Training the Time-Conditioned Unet</h2>
+        <p>
+            Here was the algorithm used to train this model as well as the training loss curve.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Time Conditioned UNet Training Algorithm</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Time Conditioned UNet Training Loss Curve</figcaption>
+            </figure>
+        </div>
+
+        <h2>Part 2.3 Sampling from the Time-Conditioned Unet</h2>
+        <p>
+            To test whether the model is doing well, we run the following sampling algorithm. Here was the algorithm followed by results at different epochs of training. Epoch 20 is when the model is fully trained. As we shall see, the results are not the best, there is merit in doing class comditioning with classifier free guidance.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Time Conditioned UNet Sampling Algorithm</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Sampling Results at Epoch 1</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Sampling Results at Epoch 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Sampling Results at Epoch 10</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Sampling Results at Epoch 15</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Sampling Results at Epoch 20</figcaption>
+            </figure>
+        </div>
+
+        <h2>Part 2.4 Adding Class Conditioning to UNet Training the Class-Conditioned UNet</h2>
+        <p>
+            In order to improve the results, we can add class conditioning to the model. This is done by adding a class embedding to the model, and conditioning the model on this class embedding. Based on recommendations from the paper, we use a one-hot encoded vector to represent the class. Here was the algorithm used to train this model and the training loss curve
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Time and ClassConditioned UNet Training Algorithm</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Time and ClassConditioned UNet Training Loss Curve</figcaption>
+            </figure>
+        </div>
+
+        <h2>Part 2.5 Sampling from the Class-Conditioned Unet</h2>
+        <p>
+            To test whether the model is doing well, we run the following sampling algorithm. Here was the algorithm followed by results at different epochs of training. Epoch 20 is when the model is fully trained. As we shall see, these results are much better than the time-only-conditioned model. Results are also shown for the fully trained model but varying guidance scales for classifier free guidance.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Time Conditioned UNet Sampling Algorithm</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Sampling Results at Epoch 1 and Guidance Scale 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Sampling Results at Epoch 5 and Guidance Scale 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Sampling Results at Epoch 10 and Guidance Scale 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Sampling Results at Epoch 15 and Guidance Scale 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Sampling Results at Epoch 20 and Guidance Scale 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Sampling Results at Epoch 20 and Guidance Scale 0</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Sampling Results at Epoch 20 and Guidance Scale 5</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Sampling Results at Epoch 20 and Guidance Scale 20 </figcaption>
+            </figure>
+        </div>
+
+    </section>
+
+    <section id="bells-whistles-a">
+        <h1>Bells and Whistles Part A</h1>
+        <h2>Course Logo</h2>
+        <p>
+            Used Image to Image Translation to create a draft course logo.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Patio Manual Result</figcaption>
+            </figure>
+        </div>
+
+        <h2>Creating something cool/Be Creative - whichever gets more cookies</h2>
+        <p>
+            There was an under-reported Presidential Debate that happened this year. I present to you the Third Presidential Debate of United States of Hipster Baristas.
+        </p>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Donald Hipster Trump</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>His Advisor: Donald Trump</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Kamala Hipster Harris</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>Her Advisor: Kamala Harris</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="bells-whistles-b"></section>
+        <h1>Bells and Whistles Part B</h1>
+        <h2>Creating Gifs</h2>
+        <p>
+            Gif for sampling from the time-conditioned UNet at all epochs from 1 to 20.
+        </p>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/morph_animation.gif" alt="Project Image 1"></a>
+                <figcaption>Time-Conditioned UNet Sampling</figcaption>
+            </figure>
+        </div>
+        <p>
+            Gif for sampling from the time-and-class-conditioned UNet at all epochs from 1 to 20.
+        </p>
+        <div class="image-container-overview"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/morph_animation.gif" alt="Project Image 1"></a>
+                <figcaption>Time-and-Class-Conditioned UNet Sampling</figcaption>
+            </figure>
+        </div>
+
+        <h2>Creating something cool/Be Creative - Testing our model's Zero shot capabilities in creating blended digits</h2>
+        <p>
+            I do this by "two-hot-encoding" instead of one-hot-encoding the class embedding vector. This is out of curiosity to see the quality of the results especially because the model has not seen such cases in its training before. Some results were good, we could see some evidence of blending and some were understandably not so good. Some more research can be done on the Zero-shot Out of Distribution capabilities of the model when it comes to creating blended digits.
+        </p>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>4 and 5 blended - Good</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>2 and 8 blended - Good</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two"></div>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>1 and 2 blended - Not Good</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/patio_mosaic.jpg"></a>
+                <figcaption>6 and 7 blended - Not Good</figcaption>
+            </figure>
+        </div>
+    </section>
+
+
+    <section id="conclusion">
+        <h2>Conclusion</h2>
+        <p>
+            This was a fun project and I learned a lot about Diffusion Models. I am looking forward to learning more about them in the future.
+        </p>
+    </section>
+    
+    <footer>
+        <p>Created by Vishnu Suresh - 2024</p>
+    </footer>
+</body>
+</html>
