@@ -16,3 +16,6 @@ In this project, I produce a "morph" animation of my face into someone else's fa
 
 ## Image Warping and Mosaicing
 In this project, I experiment with Image Homography - projecting an image on another plane surface that is not the image plane. An alternative name for this Perspective Projection Transformation. Finally, I will take three groups of three photographs (all at the same Center of Projection) and create an image mosaic (similar to an image panaroma taken on an iPhone) by registering, projective warping, resampling, and compositing them
+
+## Power of Diffusion Models
+In this project, I explore the power of diffusion models in generating high-quality images. In Part A, I generate images using a pretrained diffusion model called DeepFloyd. In Part B, I train a diffusion model on PyTorch's MNIST dataset.
