@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Processing Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Gradient Domain Fusion</h1>
+        <h2>Vishnu Suresh</h2>
+        <h2>CS 180: Computer Vision and Computational Photography</h2>
+    </header>
+    
+    <section id="about">
+        <h2>Project Overview</h2>
+        <p>In this project, I use Poisson Blending to blend one image seemlessly into another image. I also compare the results of Poisson Blending with naive blending and mixed gradient blending. This is a a simple technique with a broad set of applications including blending, tone-mapping, and non-photorealistic rendering</p>
+    </section>
+    
+    <section id="toy-problem">
+        <h2>Part 1: Toy Problem</h2>
+        <p>
+            This part seeks to give conceptual intuition for the implementation in other parts. Here, I take the provided Toy Story image as well as an image of the tennis player Roger Federer. For each of them, I compute x and y gradients and one pixel intensity and reconstruct the images. 
+
+            <div class="image-container-overview">
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/Toy_story_original_recons.png"></a>
+                    <figcaption>Toy Story Original and Reconstructed</figcaption>
+                </figure>
+            </div>
+            <div class="image-container-overview">
+                <figure>
+                    <a href="#" target="_blank"><img src="./media/rf_original_recons.png"></a>
+                    <figcaption>Roger Federer Original and Reconstructed</figcaption>
+                </figure>
+            </div>
+        </p>
+    </section>
+
+    <section id="poisson-blending">
+        <h2>Part 2: Poisson Blending</h2>
+        <p>
+            Poisson blending is a gradient-domain technique used to seamlessly blend a source region from one image into a target image.
+            The core idea is to preserve the gradients of the source region while ensuring a smooth transition with the target background.
+            To achieve this, the pixel intensities within the blending region are solved for by minimizing a least-squares energy function:
+        </p>
+        <p>
+            \[
+            v = \arg\min_{v} \sum_{i \in S} \sum_{j \in \mathcal{N}(i)} \left( (v_i - v_j) - (s_i - s_j) \right)^2
+            \]
+        </p>
+        <p>
+            Here, \(v\) represents the pixel intensities of the blended image, \(s\) is the source image, and \(\mathcal{N}(i)\) denotes the 4-connected neighbors of pixel \(i\).
+            For pixels on the boundary of the source region, we use the intensities from the target image \(t\) as fixed values to ensure a seamless boundary transition:
+        </p>
+        <p>
+            \[
+            v = \arg\min_{v} \sum_{i \in S} \sum_{j \in \mathcal{N}(i) \cap \bar{S}} \left( (v_i - t_j) - (s_i - s_j) \right)^2
+            \]
+        </p>
+        <p>
+            To solve this optimization problem, we represent it as a sparse linear system in the form:
+            \[
+            A \cdot v = b
+            \]
+            where \(A\) is a sparse matrix encoding the gradient constraints, \(v\) is the vector of unknown pixel intensities, and \(b\) contains the fixed target values and source gradients.
+            The system is solved for each color channel independently using a sparse least-squares solver.
+        </p>
+        <p>
+            This method ensures that the gradients of the source region dominate within the blended region while maintaining smooth transitions with the surrounding target image.
+        </p>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/source_dog.jpg"></a>
+                <figcaption>Source Image: Dog</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/target_pool.jpg"></a>
+                <figcaption>Target Image: Pool</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/dog_mask.png"></a>
+                <figcaption>Mask outline of Dog</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/dog_pool_naive.png"></a>
+                <figcaption>Naive Blended Result</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/dog_pool_poisson.png"></a>
+                <figcaption>Poisson Blended Result</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/source_plane.jpg"></a>
+                <figcaption>Source Image: Plane</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/target_underwater.jpeg"></a>
+                <figcaption>Target Image: Underwater</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/plane_mask.png"></a>
+                <figcaption>Mask outline of Plane</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/plane_underwater_naive.png"></a>
+                <figcaption>Naive Blended Result</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/plane_underwater_poisson.png"></a>
+                <figcaption>Poisson Blended Result</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/penguin.jpg"></a>
+                <figcaption>Source Image: Penguin</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/snow_mountain.jpg"></a>
+                <figcaption>Target Image: Mountaineers on a snow-capped hill</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/penguin_mask.png"></a>
+                <figcaption>Mask outline of Penguin</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/penguin_mountain_naive.png" alt="Project Image 1"></a>
+                <figcaption>Naive Blended Result</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/penguin_mountain_poisson.png" alt="Project Image 2"></a>
+                <figcaption>Poisson Blended Result with penguin</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/penguin_mount_two.png" alt="Project Image 2"></a>
+                <figcaption>Poisson Blended Result with two penguins</figcaption>
+            </figure>
+        </div>
+        <p>
+            <b>Minor Failure Case:</b>
+            If you look very closely at the bottom-left of the first penguin, you see a bright white spot that wasn't present in any of the original source or target images. 
+        </p>
+    </section>
+
+    <section id="mixed-gradients">
+        <h2>Bells and Whistles - Mixed Gradients</h2>
+        <p>
+            The Mixed Gradients method extends Poisson blending by combining the gradients of both the source and target images.
+            Instead of relying solely on the source gradients, it dynamically selects the stronger gradient (i.e., the one with the larger magnitude)
+            between the source and the target for each pixel. The optimization problem is formulated as:
+        </p>
+        <p>
+            \[
+            v = \arg\min_{v} \sum_{i \in S, j \in \mathcal{N}(i) \cap S} \left( (v_i - v_j) - d_{ij} \right)^2 + 
+            \sum_{i \in S, j \in \mathcal{N}(i) \cap \bar{S}} \left( (v_i - t_j) - d_{ij} \right)^2
+            \]
+        </p>
+        <p>
+            Here, \(d_{ij}\) represents the mixed gradient, which is determined as follows:
+        </p>
+        <p>
+            \[
+            d_{ij} =
+            \begin{cases}
+            s_i - s_j & \text{if } |s_i - s_j| > |t_i - t_j|, \\
+            t_i - t_j & \text{otherwise}.
+            \end{cases}
+            \]
+        </p>
+        <p>
+            In this formulation, \(v\) represents the pixel intensities of the blended image, \(s\) is the source image, \(t\) is the target image,
+            and \(\mathcal{N}(i)\) denotes the 4-connected neighbors of pixel \(i\). The first term ensures gradient preservation within the source region,
+            while the second term enforces a smooth transition at the boundary by incorporating gradients from both the source and target.
+        </p>
+        <p>
+            Similar to Poisson blending, this problem is solved as a sparse linear system:
+            \[
+            A \cdot v = b,
+            \]
+            where \(A\) encodes the gradient constraints, \(v\) is the vector of unknown pixel intensities, and \(b\) incorporates the mixed gradients and boundary conditions.
+            This approach ensures that sharp features from the source and target are preserved, resulting in a visually seamless blend.
+        </p>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/Roger Federer.jpeg" alt="Project Image 1"></a>
+                <figcaption>Source Image: Roger Federer</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/target_underwater.jpeg" alt="Project Image 2"></a>
+                <figcaption>Target Image: Underwater</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/roger_mask.png" alt="Project Image 2"></a>
+                <figcaption>Mask outline of Roger Federer</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-two">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/roger_underwater_poisson.png" alt="Project Image 1"></a>
+                <figcaption>Poisson Blended Result</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/roger_underwater_mixed.png" alt="Project Image 2"></a>
+                <figcaption>Mixed Gradient Blended Result</figcaption>
+            </figure>
+        </div>
+    </section>
+    <footer>
+        <p>Created by Vishnu Suresh - 2024</p>
+    </footer>
+</body>
+</html>

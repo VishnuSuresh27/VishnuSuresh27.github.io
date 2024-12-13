@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Processing Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Lightfield Camera</h1>
+        <h2>Vishnu Suresh</h2>
+        <h2>CS 180: Computer Vision and Computational Photography</h2>
+    </header>
+    
+    <section id="about">
+        <h2>Project Overview</h2>
+        <p>In this project, I use the Stanford Light Field Archive Dataset to perform detth refocussing and aperture adjustment of images. We take advantage of the dataset having multiple rectified and cropped images taken over a regularly spaced grid.</p>
+    </section>
+    
+    <section id="depth-refocus">
+        <h2>Part 1: Depth Refocusing</h2>
+        <p>
+            The Stanford Light Field Archive provides us with datasets of images taken over a regularly spaced grid. By simply averaging all the images, the objects far away from the camera are sharp, because their positions do not vary significantly when the camera moves around (the optical axis direction is unchanged). In contrast, objects closer to the camera appear blurry.
+        </p>
+        <p>
+            To refocus depth, we can shift the images appropriately with respect to the center image, which is the image with coordinates (8, 8) on the (17, 17) grid. The filename of each image provides the location of their respective view. We subtract from it the location of the view of the center image, to get the appropriate shift. We then introduce a parameter depth called alpha, using which we control the amount of the shift, and thus the depth we focus on.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_refocused_images.gif" alt="Project Image 1"></a>
+                <figcaption>GIF: Chess Board through different focus depths</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_alpha2.png"></a>
+                <figcaption>Alpha = 2</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_alpha1.5.png"></a>
+                <figcaption>Alpha = 1.5</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_alpha1.png"></a>
+                <figcaption>Alpha = 1</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_alpha0.5.png"></a>
+                <figcaption>Alpha = 0.5</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_alpha0.2.png"></a>
+                <figcaption>Alpha = 0.2</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_alpha0.1.png"></a>
+                <figcaption>Alpha = 0.1</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_alpha-0.1.png"></a>
+                <figcaption>Alpha = -0.1</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_alpha-0.2.png"></a>
+                <figcaption>Alpha = -0.2</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_alpha-0.9.png"></a>
+                <figcaption>Alpha = -0.9</figcaption>
+            </figure>
+        </div>
+
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/flower_refocused_images.gif" alt="Project Image 1"></a>
+                <figcaption>GIF: Flower through different focus depths</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="aperture-adjustment">
+        <h2>Part 2: Aperture Adjustment</h2>
+        <p>
+            This part involves mimicing aperture adjustment like in a camera. I first identify the center of the grid in the dataset - in this case (8, 8) and also define a hyperparameter which is the radius. We choose a radius and sample all images within that radius of the center image. And just like in Part 1, we shift them appropriately and average these images. 
+        </p>
+        <p>
+            Please note: radius = 0 means sampling only the center image and larger radius means sampling more images around the center. 
+            For the chess board, I picked an alpha value = 0.9 so that as the radius increases, the pieces in the centre remain in focus while the rest become blurry. 
+            FOr the image of the flower, I picked an alpha value = 1.5 so that as the radius increases, the centre of the flower remains in focus while the rest becomes blurry.
+        </p>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_aperture_images.gif" alt="Project Image 1"></a>
+                <figcaption>GIF: Chess Board through varying aperture adjustments</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_r0.png"></a>
+                <figcaption>R = 0</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_r1.png"></a>
+                <figcaption>R = 1</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_r3.png"></a>
+                <figcaption>R = 3</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-three">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_r5.png"></a>
+                <figcaption>R = 5</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_r7.png"></a>
+                <figcaption>R = 7</figcaption>
+            </figure>
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_r10.png"></a>
+                <figcaption>R = 10</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/chess_r50.png"></a>
+                <figcaption>R = 50</figcaption>
+            </figure>
+        </div>
+        <div class="image-container-overview">
+            <figure>
+                <a href="#" target="_blank"><img src="./media/flower_aperture_images.gif" alt="Project Image 1"></a>
+                <figcaption>GIF: Flower through varying aperture adjustments</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section id="Summary">
+        <h2>Part 3: Summary</h2>
+        <p>
+            This was a fun exercise in changing the depth of focus and aperture width of an image using a well-formatted grid image dataset. This taught me about the significance of optical flow considerations during photography. Changing depth of focus and aperture after images have been taken using simple image translation and averaging was a cool idea.
+        </p>
+    </section>
+    <footer>
+        <p>Created by Vishnu Suresh - 2024</p>
+    </footer>
+</body>
+</html>
